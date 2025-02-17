@@ -2,16 +2,35 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Latest Q&A</title>
-  <!-- Auto refresh every 10 seconds -->
+  <title>Firebase Q&A</title>
   <meta http-equiv="refresh" content="10">
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    h1 { color: #333; }
-    p { font-size: 1.1em; }
-  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-  <h1>Latest Q&A</h1><p><strong>Question Number:</strong> None</p><p><strong>Answer:</strong> Reinforcement Learning</p>
+  <h1>Latest Q&A</h1>
+  <div id="q">Loading question...</div>
+  <div id="a">Loading answer...</div>
+  <script>
+    const firebaseConfig = {
+  "apiKey": "AIzaSyC1uQ9KMr-917nDyOvSydcJTVxU0rJt0uck",
+  "authDomain": "nice-3615.firebaseapp.com",
+  "databaseURL": "https://nice-3615-default-rtdb.firebaseio.com",
+  "projectId": "nice-3615",
+  "storageBucket": "nice-3615.appspot.com",
+  "messagingSenderId": "968420237036",
+  "appId": "1:968420237036:web:3cb6e17ebdca119fa97695",
+  "measurementId": "G-8EW93XEZ6P"
+};
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+    const db = firebase.database().ref("latestQA");
+    db.on("value", s => {
+      const d = s.val() || {};
+      document.getElementById("q").innerText = "Q#: " + (d.number || "N/A");
+      document.getElementById("a").innerText = "Answer: " + (d.answer || "N/A");
+    });
+  </script>
 </body>
 </html>
