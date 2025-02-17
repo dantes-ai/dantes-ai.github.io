@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Protected Page</title>
+  <script>
+    // Simple client-side password protection using sessionStorage
+    const correctPassword = "123";
+    function checkPassword() {
+      const inputPass = document.getElementById("password").value;
+      if (inputPass === correctPassword) {
+          sessionStorage.setItem("authenticated", "true");
+          document.getElementById("login").style.display = "none";
+          document.getElementById("content").style.display = "block";
+      } else {
+          alert("Incorrect password!");
+      }
+    }
+    window.onload = function() {
+      if (sessionStorage.getItem("authenticated") === "true") {
+          document.getElementById("login").style.display = "none";
+          document.getElementById("content").style.display = "block";
+      } else {
+          document.getElementById("login").style.display = "block";
+          document.getElementById("content").style.display = "none";
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="login">
+    <h2>Please enter the password</h2>
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="checkPassword()">Submit</button>
+  </div>
+  <div id="content">
+    <h1>Welcome to my protected page!</h1><p>This content is only visible after entering the correct password.</p>
+  </div>
+</body>
+</html>
