@@ -3,39 +3,41 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Supabase Q&A</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
-      font-family: Arial, sans-serif;
-      box-sizing: border-box;
-    }
-    #container {
+      background: #fff;
+      color: #000;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      width: 100%;
-      height: 100%;
-      padding: 1em;
+      font-family: Arial, sans-serif;
     }
     #q, #a {
-      white-space: pre-wrap;
-      word-wrap: break-word;
       text-align: center;
-      margin: 0.5em 0;
+      width: 90%;
+      margin: 0.5em;
+      /* Use clamp() to scale font size between a minimum and maximum value */
+      font-size: clamp(2rem, 8vw, 5rem);
+      line-height: 1.2;
+      word-wrap: break-word;
     }
   </style>
+</head>
+<body>
+  <div id="q">Loading question...</div>
+  <div id="a">Loading answer...</div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
     const supabaseUrl = "https://lhatfqltibtppilmxgvq.supabase.co";
     const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoYXRmcWx0aWJ0cHBpbG14Z3ZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4NDk4MDksImV4cCI6MjA1NTQyNTgwOX0.FRhlw4gUhXqpTPb8LDN44hDrG6wVU_ESpjId5cvyjoo";
     const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-    // Store last loaded Q&A
+    // Store the last loaded Q&A data
     let lastQA = { question: null, answer: null };
 
     async function pollQA() {
@@ -45,30 +47,23 @@
         .order('id', { ascending: false })
         .limit(1);
       if (data && data.length > 0) {
-          // Build the current QA object
           const currentQA = {
               question: data[0].question || "N/A",
               answer: data[0].answer || "N/A"
           };
-          // Compare with the last loaded data
+          // Only update if the content has changed
           if (JSON.stringify(currentQA) !== JSON.stringify(lastQA)) {
               lastQA = currentQA;
-              // Reload the page when Q&A changes
-              window.location.reload();
+              document.getElementById("q").innerText = currentQA.question;
+              document.getElementById("a").innerText = currentQA.answer;
           }
       }
     }
 
     window.onload = () => {
-      // Start polling every 5 seconds
+      pollQA();
       setInterval(pollQA, 5000);
     };
   </script>
-</head>
-<body>
-  <div id="container">
-    <div id="q">Loading question...</div>
-    <div id="a">Loading answer...</div>
-  </div>
 </body>
 </html>
