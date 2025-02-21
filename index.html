@@ -32,38 +32,43 @@
   <div id="a">Loading answer...</div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
+    // Initialize Supabase client using the global "supabase" variable provided by the CDN
     const supabaseUrl = "https://lhatfqltibtppilmxgvq.supabase.co";
     const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoYXRmcWx0aWJ0cHBpbG14Z3ZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4NDk4MDksImV4cCI6MjA1NTQyNTgwOX0.FRhlw4gUhXqpTPb8LDN44hDrG6wVU_ESpjId5cvyjoo";
-    // Use a different variable name for the client to avoid clashing with the library name.
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
     let lastQA = { question: null, answer: null };
 
-    async function pollQA() {
-      const { data, error } = await supabaseClient
+    function pollQA() {
+      supabaseClient
         .from('qa')
         .select('*')
         .order('id', { ascending: false })
-        .limit(1);
-      if (error) {
-        console.error('Error fetching QA:', error);
-      } else if (data && data.length > 0) {
-          const currentQA = {
-              question: data[0].question || "N/A",
-              answer: data[0].answer || "N/A"
-          };
-          if (JSON.stringify(currentQA) !== JSON.stringify(lastQA)) {
+        .limit(1)
+        .then(response => {
+          if (response.error) {
+            console.error("Error fetching QA:", response.error);
+          } else if (response.data && response.data.length > 0) {
+            const row = response.data[0];
+            const newQuestion = row.question ? row.question : "No question";
+            const newAnswer = row.answer ? row.answer : "No answer";
+            const currentQA = { question: newQuestion, answer: newAnswer };
+            if (JSON.stringify(currentQA) !== JSON.stringify(lastQA)) {
               lastQA = currentQA;
-              document.getElementById("q").innerText = currentQA.question;
-              document.getElementById("a").innerText = currentQA.answer;
+              document.getElementById("q").innerText = newQuestion;
+              document.getElementById("a").innerText = newAnswer;
+            }
           }
-      }
+        })
+        .catch(error => {
+          console.error("Polling error:", error);
+        });
     }
 
-    window.onload = () => {
+    document.addEventListener("DOMContentLoaded", () => {
       pollQA();
       setInterval(pollQA, 5000);
-    };
+    });
   </script>
 </body>
 </html>
