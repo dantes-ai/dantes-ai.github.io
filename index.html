@@ -2,31 +2,30 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <!-- Mobile-friendly viewport -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Supabase Q&A</title>
   <style>
     html, body {
-      margin: 0; 
-      padding: 0; 
-      width: 100%; 
-      height: 100%; 
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
       font-family: Arial, sans-serif;
       box-sizing: border-box;
     }
     #container {
-      display: flex; 
-      flex-direction: column; 
-      justify-content: center; 
-      align-items: center; 
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       width: 100%;
       height: 100%;
       padding: 1em;
     }
     #q, #a {
-      white-space: pre-wrap; 
-      word-wrap: break-word; 
-      text-align: center; 
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      text-align: center;
       margin: 0.5em 0;
     }
   </style>
@@ -34,42 +33,40 @@
   <script>
     const supabaseUrl = "https://lhatfqltibtppilmxgvq.supabase.co";
     const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoYXRmcWx0aWJ0cHBpbG14Z3ZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk4NDk4MDksImV4cCI6MjA1NTQyNTgwOX0.FRhlw4gUhXqpTPb8LDN44hDrG6wVU_ESpjId5cvyjoo";
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-    // Fetch the latest row from 'qa' (descending by 'id', if you have an 'id' column).
-    async function fetchQA() {
+    // Store last loaded Q&A
+    let lastQA = { question: null, answer: null };
+
+    async function pollQA() {
       const { data, error } = await supabase
         .from('qa')
         .select('*')
-        .order('id', { ascending: false }) // If you have 'id' as a PK or auto-increment
+        .order('id', { ascending: false })
         .limit(1);
-
       if (data && data.length > 0) {
-        document.getElementById("q").innerText = "Q#: " + (data[0].question || "N/A");
-        document.getElementById("a").innerText = "Answer: " + (data[0].answer || "N/A");
-      } else {
-        document.getElementById("q").innerText = "No data found";
-        document.getElementById("a").innerText = "";
+          // Build the current QA object
+          const currentQA = {
+              question: data[0].question || "N/A",
+              answer: data[0].answer || "N/A"
+          };
+          // Compare with the last loaded data
+          if (JSON.stringify(currentQA) !== JSON.stringify(lastQA)) {
+              lastQA = currentQA;
+              // Reload the page when Q&A changes
+              window.location.reload();
+          }
       }
     }
 
-    // On load, fetch once, then subscribe for real-time changes
-    window.onload = async () => {
-      await fetchQA();
-
-      // Subscribe to any insert/update/delete on the 'qa' table
-      supabase
-        .from('qa')
-        .on('*', payload => {
-          fetchQA();
-        })
-        .subscribe();
+    window.onload = () => {
+      // Start polling every 5 seconds
+      setInterval(pollQA, 5000);
     };
   </script>
 </head>
 <body>
   <div id="container">
-    <h1>Latest Q&A</h1>
     <div id="q">Loading question...</div>
     <div id="a">Loading answer...</div>
   </div>
